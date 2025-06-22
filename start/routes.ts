@@ -15,6 +15,7 @@ import SuppliersController from '#controllers/suppliers_controller'
 import router from '@adonisjs/core/services/router'
 import { middleware } from './kernel.js'
 import LogsController from '#controllers/logs_controller'
+import DashboardController from '#controllers/dashboard_controller'
 
 router.get('/', async (ctx) => {
     return ctx.view.render('home')
@@ -32,9 +33,7 @@ router.group(() => {
 
 //Admin Route
 router.group(() => {
-    router.get('/', async (ctx) => {
-        return ctx.view.render('dashboard')
-    }).as('dashboard')
+    router.get('/', [DashboardController, 'index']).as('dashboard')
 
     router.post('/logout', [AuthController, 'logout']).as('logout')
 

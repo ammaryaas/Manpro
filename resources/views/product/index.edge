@@ -52,19 +52,41 @@
                 placeholder="Search products..." x-model="searchQuery" @input.debounce.300ms="filterProducts">
         </div>
         <div class="flex space-x-3 w-full md:w-auto">
-            <div class="relative">
-                <select
-                    class="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded leading-tight focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                    @change="filterProducts">
-                    <option value="">All Categories</option>
-                    @each(item in category)
-                        <option value="">{{ item.category_name }}</option>
-                    @end
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                    <i class="fas fa-chevron-down"></i>
+            <form method="get" action="{{ route('admin.product.index') }}">
+                <div class="flex">
+                    <select name="category_id"
+                        class="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                        @change="filterProducts">
+                        <option value="">All Categories</option>
+                        @each(item in category)
+                        <option value="{{ item.id }}"{{ item.id == request.input('category_id') ? 'selected' : '' }}>
+                            {{ item.category_name }}
+                        </option>
+                        @end
+                    </select>
+                    <button type="submit"
+                        class="inline-flex items-center pl-3 pr-1 py-2 border border-transparent text-sm font-medium shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                        <i class="fa-solid fa-filter mr-2"></i>
+                    </button>
                 </div>
-            </div>
+            </form>
+            <form method="get" action="{{ route('admin.product.index') }}">
+                <div class="flex">
+                    <select name="supplier_id"
+                        class="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                        <option value="">All Supplier</option>
+                        @each(item in supplier)
+                        <option value="{{ item.id }}"{{ item.id == request.input('supplier_id') ? 'selected' : '' }}>
+                            {{ item.name }}
+                        </option>
+                        @end
+                    </select>
+                    <button type="submit"
+                        class="inline-flex items-center pl-3 pr-1 py-2 border border-transparent text-sm font-medium shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                        <i class="fa-solid fa-filter mr-2"></i>
+                    </button>
+                </div>
+            </form>
             <a href="{{ route('admin.product.create') }}">
                 <button @click="openAddProductModal"
                     class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">

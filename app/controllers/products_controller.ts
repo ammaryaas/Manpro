@@ -6,10 +6,28 @@ import { ProductValidator } from '#validators/product'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class ProductsController {
-    async index({ view }: HttpContext) {
-        const product = await Product.query().preload('category').preload('supplier')
+    async index({ view, request }: HttpContext) {
+        const { name, category_id, status, supplier_id } = request.qs()
+        const query = Product.query()
+        if (name) {
+            query.where('name', 'like', `%${name}%`)
+        }
+        if (category_id) {
+            query.where('category_id', category_id)
+        }
+        if (status) {
+            query.where('status', status)
+        }
+        if (supplier_id) {
+            query.where('supplier_id', supplier_id)
+        }
+
+        query.preload('category').preload('supplier')
+
+        const product = await query
         const category = await Category.all()
-        return view.render('product/index', { product, category })
+        const supplier = await Supplier.all()
+        return view.render('product/index', { product, category, supplier })
     }
 
     async create({ view }: HttpContext) {
