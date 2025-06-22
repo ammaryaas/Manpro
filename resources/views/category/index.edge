@@ -1,0 +1,196 @@
+@layout.admin({ page: 'Category' })
+    @slot('main')
+        <!-- Content -->
+        <main class="p-4">
+            <!-- Additional Info -->
+            {{-- <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg shadow-md p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-primary-100 p-3 rounded-full">
+                            <i class="fas fa-box text-primary-600 text-lg"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-gray-900">Total Categories</h3>
+                            <p class="text-2xl font-semibold text-gray-900">142</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-check-circle text-green-600 text-lg"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-gray-900">Active Categories</h3>
+                            <p class="text-2xl font-semibold text-gray-900">124</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-yellow-100 p-3 rounded-full">
+                            <i class="fas fa-tags text-yellow-600 text-lg"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-gray-900">Categories</h3>
+                            <p class="text-2xl font-semibold text-gray-900">8</p>
+                        </div>
+                    </div>
+                </div>
+            </div> --}}
+
+            <!-- Action Bar -->
+            <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4 mt-6">
+                <div class="relative w-full md:w-64">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input type="text"
+                        class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                        placeholder="Search categories..." x-model="searchQuery" @input.debounce.300ms="filterCategories">
+                </div>
+                <a href="{{ route('admin.category.create') }}">
+                    <button
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 w-full md:w-auto">
+                        <i class="fas fa-plus mr-2"></i> Add Category
+                    </button>
+                </a>
+            </div>
+
+            <!-- Categories Table -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-800">Category List</h3>
+                    <div class="text-sm text-gray-500">found</div> <!-- menampilkan jumlah kategori yang ada -->
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Name</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Description</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Status</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @each(item in category)
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div
+                                                class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                                <i class="fas fa-tag text-gray-400"></i>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">{{ item.category_name }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-500">{{ item.description ? item.description : '-' }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" :class="{
+                                                                    'bg-green-100 text-green-800': {{ item.category_status === 'active' }},
+                                                                    'bg-gray-100 text-gray-800': {{ item.category_status === 'inactive' }}
+                                                                }">{{ item.category_status }}
+                                        </span>
+                                    </td>
+                                    <td class="flex justify-end pr-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="{{ route('admin.category.edit', [item.id]) }}">
+                                            <button @click="editCategory(category)"
+                                                class="text-primary-600 hover:text-primary-900 mr-3">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </a>
+                                        <form method="POST" action="{{ route('admin.category.destroy', [item.id]) }}?_method=DELETE">
+                                            {{ csrfField() }}
+                                            <button 
+                                                type="submit"
+                                                {{-- @click="confirmDelete(category)"  --}}
+                                                class="text-red-600 hover:text-red-900">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>                                
+                            @end
+                            <tr x-show="filteredCategories.length === 0">
+                                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    No categories found
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
+                    <div class="flex-1 flex justify-between sm:hidden">
+                        <button @click="currentPage > 1 ? currentPage-- : null"
+                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Previous
+                        </button>
+                        <button @click="currentPage < totalPages ? currentPage++ : null"
+                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Next
+                        </button>
+                    </div>
+                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700">
+                                Showing <span class="font-medium" x-text="(currentPage - 1) * itemsPerPage + 1"></span> to
+                                <span class="font-medium"
+                                    x-text="Math.min(currentPage * itemsPerPage, filteredCategories.length)"></span> of
+                                <span class="font-medium" x-text="filteredCategories.length"></span> results
+                            </p>
+                        </div>
+                        <div>
+                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                <button @click="currentPage = 1" :disabled="currentPage === 1"
+                                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                                    <span class="sr-only">First</span>
+                                    <i class="fas fa-angle-double-left"></i>
+                                </button>
+                                <button @click="currentPage > 1 ? currentPage-- : null" :disabled="currentPage === 1"
+                                    class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                                    <span class="sr-only">Previous</span>
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <template x-for="page in visiblePages" :key="page">
+                                    <button @click="currentPage = page" :class="{
+                                                                'z-10 bg-primary-50 border-primary-500 text-primary-600': currentPage === page,
+                                                                'bg-white border-gray-300 text-gray-500 hover:bg-gray-50': currentPage !== page
+                                                            }"
+                                        class="relative inline-flex items-center px-4 py-2 border text-sm font-medium"
+                                        x-text="page">
+                                    </button>
+                                </template>
+                                <button @click="currentPage < totalPages ? currentPage++ : null"
+                                    :disabled="currentPage === totalPages"
+                                    class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                                    <span class="sr-only">Next</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                                <button @click="currentPage = totalPages" :disabled="currentPage === totalPages"
+                                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                                    <span class="sr-only">Last</span>
+                                    <i class="fas fa-angle-double-right"></i>
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    @endslot
+@end

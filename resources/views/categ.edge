@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans" x-data="categoryPage()" x-cloak>
+    <div class="min-h-screen flex">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white shadow-md fixed h-full" 
+             :class="{'-ml-64': !sidebarOpen}" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="-ml-64"
+             x-transition:enter-end="ml-0"
+             x-transition:leave="transition ease-in duration-300"
+             x-transition:leave-start="ml-0"
+             x-transition:leave-end="-ml-64">
+            <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                <h1 class="text-xl font-bold text-primary-600">Admin<span class="text-gray-700">Panel</span></h1>
+                <button @click="sidebarOpen = false" class="text-gray-500 hover:text-gray-700 md:hidden">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <nav class="p-4">
+                <div class="mb-6">
+                    <p class="text-xs uppercase text-gray-500 font-semibold mb-3">Main</p>
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#" class="flex items-center p-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 group">
+                                <i class="fas fa-tachometer-alt mr-3"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center p-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 group">
+                                <i class="fas fa-users mr-3"></i>
+                                <span>Users</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center p-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 group">
+                                <i class="fas fa-box-open mr-3"></i>
+                                <span>Products</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center p-2 text-sm font-medium rounded-lg text-white bg-primary-500 group">
+                                <i class="fas fa-tags mr-3"></i>
+                                <span>Categories</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 ml-0 transition-all duration-300 ease-in-out" :class="{'md:ml-64': sidebarOpen}">
+            <!-- Header -->
+            <header class="bg-white shadow-sm sticky top-0 z-10">
+                <div class="flex items-center justify-between p-4">
+                    <div class="flex items-center">
+                        <button @click="sidebarOpen = !sidebarOpen" class="text-gray-500 hover:text-gray-700 mr-2 md:hidden">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h2 class="text-lg font-semibold text-gray-800">Category Management</h2>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="text-gray-500 hover:text-gray-700 relative">
+                            <i class="fas fa-bell"></i>
+                            <span class="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500"></span>
+                        </button>
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" class="flex items-center space-x-2 focus:outline-none">
+                                <div class="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center text-white font-semibold">
+                                    JD
+                                </div>
+                                <span class="hidden md:inline text-sm font-medium">John Doe</span>
+                                <i class="fas fa-chevron-down text-xs hidden md:inline"></i>
+                            </button>
+                            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <main class="p-4">
+                <!-- Action Bar -->
+                <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+                    <div class="relative w-full md:w-64">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input 
+                            type="text" 
+                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" 
+                            placeholder="Search categories..."
+                            x-model="searchQuery"
+                            @input.debounce.300ms="filterCategories">
+                    </div>
+                    <button 
+                        @click="openAddCategoryModal"
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 w-full md:w-auto">
+                        <i class="fas fa-plus mr-2"></i> Add Category
+                    </button>
+                </div>
+
+                <!-- Categories Table -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-800">Category List</h3>
+                        <div class="text-sm text-gray-500" x-text="`${filteredCategories.length} categories found`"></div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Products</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <template x-for="category in paginatedCategories" :key="category.id">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                                    <i class="fas fa-tag text-gray-400"></i>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900" x-text="category.name"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-500" x-text="category.slug"></div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900" x-text="category.productCount"></div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span 
+                                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" 
+                                                :class="{
+                                                    'bg-green-100 text-green-800': category.status === 'Active',
+                                                    'bg-gray-100 text-gray-800': category.status === 'Inactive'
+                                                }" 
+                                                x-text="category.status">
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button 
+                                                @click="editCategory(category)"
+                                                class="text-primary-600 hover:text-primary-900 mr-3">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button 
+                                                @click="confirmDelete(category)"
+                                                class="text-red-600 hover:text-red-900">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <tr x-show="filteredCategories.length === 0">
+                                    <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                                        No categories found
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
+                        <div class="flex-1 flex justify-between sm:hidden">
+                            <button 
+                                @click="currentPage > 1 ? currentPage-- : null"
+                                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                Previous
+                            </button>
+                            <button 
+                                @click="currentPage < totalPages ? currentPage++ : null"
+                                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                Next
+                            </button>
+                        </div>
+                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-sm text-gray-700">
+                                    Showing <span class="font-medium" x-text="(currentPage - 1) * itemsPerPage + 1"></span> to 
+                                    <span class="font-medium" x-text="Math.min(currentPage * itemsPerPage, filteredCategories.length)"></span> of 
+                                    <span class="font-medium" x-text="filteredCategories.length"></span> results
+                                </p>
+                            </div>
+                            <div>
+                                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                    <button 
+                                        @click="currentPage = 1"
+                                        :disabled="currentPage === 1"
+                                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                                        <span class="sr-only">First</span>
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </button>
+                                    <button 
+                                        @click="currentPage > 1 ? currentPage-- : null"
+                                        :disabled="currentPage === 1"
+                                        class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                                        <span class="sr-only">Previous</span>
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <template x-for="page in visiblePages" :key="page">
+                                        <button 
+                                            @click="currentPage = page"
+                                            :class="{
+                                                'z-10 bg-primary-50 border-primary-500 text-primary-600': currentPage === page,
+                                                'bg-white border-gray-300 text-gray-500 hover:bg-gray-50': currentPage !== page
+                                            }"
+                                            class="relative inline-flex items-center px-4 py-2 border text-sm font-medium"
+                                            x-text="page">
+                                        </button>
+                                    </template>
+                                    <button 
+                                        @click="currentPage < totalPages ? currentPage++ : null"
+                                        :disabled="currentPage === totalPages"
+                                        class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                                        <span class="sr-only">Next</span>
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                    <button 
+                                        @click="currentPage = totalPages"
+                                        :disabled="currentPage === totalPages"
+                                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                                        <span class="sr-only">Last</span>
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </button>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add/Edit Category Modal -->
+    <div x-show="isModalOpen" class="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="isModalOpen" 
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+                 aria-hidden="true"
+                 @click="isModalOpen = false">
+            </div>
+
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div x-show="isModalOpen" 
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title" x-text="editingCategory ? 'Edit Category' : 'Add New Category'"></h3>
+                            <div class="mt-6 space-y-4">
+                                <div>
+                                    <label for="category-name" class="block text-sm font-medium text-gray-700">Category Name</label>
+                                    <input 
+                                        type="text" 
+                                        x-model="currentCategory.name"
+                                        id="category-name" 
+                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                                </div>
+
+                                <div>
+                                    <label for="category-slug" class="block text-sm font-medium text-gray-700">Slug</label>
+                                    <input 
+                                        type="text" 
+                                        x-model="currentCategory.slug"
+                                        id="category-slug" 
+                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                                </div>
+
+                                <div>
+                                    <label for="category-description" class="block text-sm font-medium text-gray-700">Description</label>
+                                    <textarea 
+                                        x-model="currentCategory.description"
+                                        id="category-description" 
+                                        rows="3" 
+                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"></textarea>
+                                </div>
+
+                                <div>
+                                    <label for="category-status" class="block text-sm font-medium text-gray-700">Status</label>
+                                    <select 
+                                        x-model="currentCategory.status"
+                                        id="category-status" 
+                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button 
+                        type="button"
+                        @click="saveCategory"
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Save
+                    </button>
+                    <button 
+                        type="button"
+                        @click="isModalOpen = false"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div x-show="isDeleteModalOpen" class="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="isDeleteModalOpen" 
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+                 aria-hidden="true"
+                 @click="isDeleteModalOpen = false">
+            </div>
+
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div x-show="isDeleteModalOpen" 
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-exclamation text-red-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Delete Category</h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">Are you sure you want to delete the category "<span class="font-semibold" x-text="currentCategory.name"></span>"?</p>
+                                <p class="text-sm text-gray-500 mt-1">This action cannot be undone.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button 
+                        type="button"
+                        @click="deleteCategory"
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Delete
+                    </button>
+                    <button 
+                        type="button"
+                        @click="isDeleteModalOpen = false"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function categoryPage() {
+            return {
+                sidebarOpen: window.innerWidth > 768,
+                isModalOpen: false,
+                isDeleteModalOpen: false,
+                editingCategory: false,
+                searchQuery: '',
+                currentPage: 1,
+                itemsPerPage: 10,
+                currentCategory: {
+                    id: '',
+                    name: '',
+                    slug: '',
+                    description: '',
+                    status: 'Active',
+                    productCount: 0
+                },
+                categories: [
+                    {
+                        id: '1',
+                        name: 'Electronics',
+                        slug: 'electronics',
+                        description: 'Electronic devices and gadgets',
+                        status: 'Active',
+                        productCount: 42
+                    },
+                    {
+                        id: '2',
+                        name: 'Clothing',
+                        slug: 'clothing',
+                        description: 'Men and women clothing',
+                        status: 'Active',
+                        productCount: 36
+                    },
+                    {
+                        id: '3',
+                        name: 'Home & Garden',
+                        slug: 'home-garden',
+                        description: 'Home decoration and garden tools',
+                        status: 'Active',
+                        productCount: 28
+                    },
+                    {
+                        id: '4',
+                        name: 'Sports',
+                        slug: 'sports',
+                        description: 'Sports equipment and accessories',
+                        status: 'Active',
+                        productCount: 19
+                    },
+                    {
+                        id: '5',
+                        name: 'Beauty',
+                        slug: 'beauty',
+                        description: 'Beauty and personal care products',
+                        status: 'Active',
+                        productCount: 31
+                    },
+                    {
+                        id: '6',
+                        name: 'Toys',
+                        slug: 'toys',
+                        description: 'Toys for children of all ages',
+                        status: 'Active',
+                        productCount: 15
+                    },
+                    {
+                        id: '7',
+                        name: 'Books',
+                        slug: 'books',
+                        description: 'Various books and magazines',
+                        status: 'Inactive',
+                        productCount: 8
+                    },
+                    {
+                        id: '8',
+                        name: 'Food & Beverage',
+                        slug: 'food-beverage',
+                        description: 'Food and drink products',
+                        status: 'Active',
+                        productCount: 23
+                    },
+                    {
+                        id: '9',
+                        name: 'Health',
+                        slug: 'health',
+                        description: 'Health and wellness products',
+                        status: 'Active',
+                        productCount: 17
+                    },
+                    {
+                        id: '10',
+                        name: 'Automotive',
+                        slug: 'automotive',
+                        description: 'Car accessories and parts',
+                        status: 'Active',
+                        productCount: 12
+                    }
+                ],
+                init() {
+                    this.handleResize();
+                    window.addEventListener('resize', this.handleResize.bind(this));
+                },
+                handleResize() {
+                    this.sidebarOpen = window.innerWidth > 768;
+                },
+                get filteredCategories() {
+                    if (!this.searchQuery) {
+                        return this.categories;
+                    }
+                    const query = this.searchQuery.toLowerCase();
+                    return this.categories.filter(category => 
+                        category.name.toLowerCase().includes(query) || 
+                        category.slug.toLowerCase().includes(query) ||
+                        category.description.toLowerCase().includes(query)
+                    );
+                },
+                get totalPages() {
+                    return Math.ceil(this.filteredCategories.length / this.itemsPerPage);
+                },
+                get visiblePages() {
+                    const range = 2; // Number of pages to show before and after current page
+                    let start = Math.max(1, this.currentPage - range);
+                    let end = Math.min(this.totalPages, this.currentPage + range);
+                    
+                    // Adjust if we're at the start or end
+                    if (this.currentPage - range < 1) {
+                        end = Math.min(end + (range - this.currentPage + 1), this.totalPages);
+                    }
+                    if (this.currentPage + range > this.totalPages) {
+                        start = Math.max(start - (this.currentPage + range - this.totalPages), 1);
+                    }
+                    
+                    const pages = [];
+                    for (let i = start; i <= end; i++) {
+                        pages.push(i);
+                    }
+                    return pages;
+                },
+                get paginatedCategories() {
+                    const start = (this.currentPage - 1) * this.itemsPerPage;
+                    const end = start + this.itemsPerPage;
+                    return this.filteredCategories.slice(start, end);
+                },
+                filterCategories() {
+                    this.currentPage = 1; // Reset to first page when filtering
+                },
+                openAddCategoryModal() {
+                    this.editingCategory = false;
+                    this.currentCategory = {
+                        id: '',
+                        name: '',
+                        slug: '',
+                        description: '',
+                        status: 'Active',
+                        productCount: 0
+                    };
+                    this.isModalOpen = true;
+                },
+                editCategory(category) {
+                    this.editingCategory = true;
+                    this.currentCategory = {...category};
+                    this.isModalOpen = true;
+                },
+                saveCategory() {
+                    if (this.editingCategory) {
+                        // Update existing category
+                        const index = this.categories.findIndex(c => c.id === this.currentCategory.id);
+                        if (index !== -1) {
+                            this.categories[index] = {...this.currentCategory};
+                        }
+                    } else {
+                        // Add new category
+                        this.currentCategory.id = (this.categories.length + 1).toString();
+                        this.currentCategory.slug = this.currentCategory.name.toLowerCase().replace(/ /g, '-');
+                        this.categories.unshift({...this.currentCategory});
+                    }
+                    this.isModalOpen = false;
+                },
+                confirmDelete(category) {
+                    this.currentCategory = {...category};
+                    this.isDeleteModalOpen = true;
+                },
+                deleteCategory() {
+                    this.categories = this.categories.filter(c => c.id !== this.currentCategory.id);
+                    this.isDeleteModalOpen = false;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

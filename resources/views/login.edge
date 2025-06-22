@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Register - TechShop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(120deg, rgba(14, 165, 233, 0.1) 0%, rgba(2, 132, 199, 0.1) 100%);
+        }
+
+        .auth-container {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-input:focus {
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.3);
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .tabs .active {
+            border-bottom: 3px solid #0ea5e9;
+            color: #0ea5e9;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    @if(flashMessages.has('error'))
+    <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 3000)" x-show="show"
+        x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-2"
+        x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2"
+        class="fixed top-4 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-red-200 p-4 rounded-lg z-50 shadow-lg"
+        role="alert">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-md text-red-600"></i>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm text-red-600 font-medium">Error</h3>
+                <div class="mt-1 text-sm text-red-500">
+                    {{ flashMessages.get('error') }}
+                </div>
+            </div>
+            <div class="ml-auto pl-3">
+                <button @click="show = false" type="button" class="text-red-600 hover:text-gray-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    @end
+    @if(flashMessages.has('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ flashMessages.get('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @end
+
+    <div class="auth-container bg-white rounded-2xl overflow-hidden w-full max-w-4xl flex flex-col md:flex-row">
+        <!-- Left Side - Illustration -->
+        <div class="hidden md:flex md:w-2/5 bg-gradient-to-br from-primary-500 to-primary-700 p-10 text-white">
+            <div class="flex flex-col justify-between h-full">
+                <div>
+                    <div class="flex items-center mb-8">
+                        <div
+                            class="h-12 w-12 rounded-full bg-white flex items-center justify-center text-primary-600 font-bold mr-3">
+                            T
+                        </div>
+                        <span class="text-2xl font-bold">Tech<span class="text-white">Shop</span></span>
+                    </div>
+                    <h2 class="text-3xl font-bold mb-4">Selamat Datang Kembali!</h2>
+                    <p class="opacity-90">Masuk ke akun Anda untuk melanjutkan pengalaman berbelanja yang lebih
+                        personal.</p>
+                </div>
+                <div class="mt-auto">
+                    <div class="flex items-center">
+                        <div class="flex -space-x-2">
+                            <div class="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
+                                <i class="fas fa-user text-sm"></i>
+                            </div>
+                            <div class="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
+                                <i class="fas fa-user text-sm"></i>
+                            </div>
+                            <div class="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
+                                <i class="fas fa-user text-sm"></i>
+                            </div>
+                        </div>
+                        <p class="ml-4 text-sm opacity-80">Bergabung dengan 50.000+ pengguna lainnya</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Forms -->
+        <div class="w-full md:w-3/5 p-8 md:p-12">
+            <!-- Tabs for Login/Register -->
+            <div class="tabs flex border-b mb-8">
+                <button id="login-tab" class="py-3 px-6 text-center text-gray-600 active transition-all duration-300">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Masuk
+                </button>
+                <button id="register-tab" class="py-3 px-6 text-center text-gray-600 transition-all duration-300">
+                    <i class="fas fa-user-plus mr-2"></i> Daftar
+                </button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="login-form" class="form-content">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Masuk ke Akun Anda</h2>
+                <p class="text-gray-600 mb-8">Silakan masukkan detail login Anda</p>
+
+                <form method="post" action="{{ route('auth.login') }}">
+                    {{ csrfField() }}
+                    <div class="mb-6">
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-gray-400"></i>
+                            </div>
+                            <input type="email" id="email" name="email"
+                                class="form-input pl-10 w-full py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                placeholder="email@example.com">
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input type="password" id="password" name="password"
+                                class="form-input pl-10 w-full py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                placeholder="••••••••">
+                            <button type="button"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center">
+                            <input id="remember-me" type="checkbox"
+                                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                            <label for="remember-me" class="ml-2 block text-sm text-gray-700">Remember Me</label>
+                        </div>
+                        <a href="#" class="text-sm text-primary-600 hover:text-primary-800">Forgot Password?</a>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full bg-primary-600 hover:bg-primary-700 text-white py-3 px-4 rounded-lg font-medium transition duration-300 mb-6">
+                        Login
+                    </button>
+
+                    <div class="relative mb-6">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-gray-500">Or login with</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 mb-8">
+                        <button type="button"
+                            class="social-btn flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-300">
+                            <i class="fab fa-google text-red-500 mr-2"></i> Google
+                        </button>
+                        <button type="button"
+                            class="social-btn flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-300">
+                            <i class="fab fa-facebook text-blue-600 mr-2"></i> Facebook
+                        </button>
+                        <button type="button"
+                            class="social-btn flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-300">
+                            <i class="fab fa-apple text-gray-800 mr-2"></i> Apple
+                        </button>
+                    </div>
+
+                    <p class="text-center text-gray-600">
+                        Doesn't have an account? <button type="button"
+                            class="text-primary-600 hover:text-primary-800 font-medium switch-to-register">Register
+                            Now</button>
+                    </p>
+                </form>
+            </div>
+
+            <!-- Register Form -->
+            <div id="register-form" class="form-content hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Buat Akun Baru</h2>
+                <p class="text-gray-600 mb-8">Isi informasi di bawah untuk membuat akun baru</p>
+
+                <form>
+                    <div class="mb-6">
+                        <label for="first-name" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </div>
+                            <input type="text" id="first-name"
+                                class="form-input pl-10 w-full py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                placeholder="John">
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="reg-email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-gray-400"></i>
+                            </div>
+                            <input type="email" id="reg-email"
+                                class="form-input pl-10 w-full py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                placeholder="email@contoh.com">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="reg-password"
+                                class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-lock text-gray-400"></i>
+                                </div>
+                                <input type="password" id="reg-password"
+                                    class="form-input pl-10 w-full py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    placeholder="••••••••">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="confirm-password"
+                                class="block text-sm font-medium text-gray-700 mb-2">Konfirmasi Password</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-lock text-gray-400"></i>
+                                </div>
+                                <input type="password" id="confirm-password"
+                                    class="form-input pl-10 w-full py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    placeholder="••••••••">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="terms" type="checkbox"
+                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="terms" class="text-gray-700">
+                                    Saya setuju dengan <a href="#"
+                                        class="text-primary-600 hover:text-primary-800">Syarat & Ketentuan</a> dan <a
+                                        href="#" class="text-primary-600 hover:text-primary-800">Kebijakan Privasi</a>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full bg-primary-600 hover:bg-primary-700 text-white py-3 px-4 rounded-lg font-medium transition duration-300 mb-6">
+                        Daftar Sekarang
+                    </button>
+
+                    <p class="text-center text-gray-600">
+                        Sudah punya akun? <button type="button"
+                            class="text-primary-600 hover:text-primary-800 font-medium switch-to-login">Masuk
+                            sekarang</button>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle between login and register forms
+        document.addEventListener('DOMContentLoaded', function () {
+            const loginTab = document.getElementById('login-tab');
+            const registerTab = document.getElementById('register-tab');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const switchToRegister = document.querySelector('.switch-to-register');
+            const switchToLogin = document.querySelector('.switch-to-login');
+
+            // Function to switch to register form
+            function showRegister() {
+                loginTab.classList.remove('active');
+                registerTab.classList.add('active');
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+            }
+
+            // Function to switch to login form
+            function showLogin() {
+                registerTab.classList.remove('active');
+                loginTab.classList.add('active');
+                registerForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+            }
+
+            // Add event listeners
+            registerTab.addEventListener('click', showRegister);
+            loginTab.addEventListener('click', showLogin);
+            switchToRegister.addEventListener('click', showRegister);
+            switchToLogin.addEventListener('click', showLogin);
+
+            // Password visibility toggle
+            const passwordInput = document.getElementById('password');
+            const eyeButton = document.querySelector('[type="button"][aria-label="toggle password visibility"]');
+
+            if (eyeButton) {
+                eyeButton.addEventListener('click', function () {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
